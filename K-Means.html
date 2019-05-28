@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<title>鸢尾花分类算法演示</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.2/css/mdui.min.css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.2/js/mdui.min.js"></script>
+		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+		<script src="./echarts.min.js"></script>
+		<script src="./irisdata.js"></script>
+		<div class="mdui-toolbar mdui-color-theme">
+			<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">menu</i></a>
+			<span class="mdui-typo-title">鸢尾花分类算法演示</span>
+			<div class="mdui-toolbar-spacer"></div>
+		</div>
+	</head>
+	<body class="mdui-loaded mdui-theme-primary-indigo mdui-theme-accent-pink">
+		<div class="mdui-fab-wrapper" id="fab1">
+			<button class="mdui-fab mdui-ripple mdui-color-theme-accent">
+				<!-- 默认显示的图标 -->
+				<i class="mdui-icon material-icons">add</i>
+
+				<!-- 在拨号菜单开始打开时，平滑切换到该图标，若不需要切换图标，则可以省略该元素 -->
+				<i class="mdui-icon mdui-fab-opened material-icons">add</i>
+			</button>
+			<div class="mdui-fab-dial">
+				<button mdui-tooltip="{content: '展示数据',position:'left'}" onclick="show_data()" class="mdui-fab mdui-fab-mini mdui-color-light-green-800"><i
+					 class="mdui-icon material-icons">date_range</i></button>
+				<button mdui-tooltip="{content: '数据可视化',position:'left'}" onclick="show_graph()" class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-light-blue-a700"><i
+					 class="mdui-icon material-icons">chrome_reader_mode</i></button>
+				<button mdui-tooltip="{content: '执行分类',position:'left'}" onclick="run()" class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-deep-purple"><i
+					 class="mdui-icon material-icons">cloud_queue</i></button>
+			</div>
+		</div>
+
+		<div class="mdui-panel mdui-panel-popout" mdui-panel id="panel1">
+
+			<div class="mdui-panel-item">
+				<div class="mdui-panel-item-header">数据 - Data</div>
+				<div class="mdui-panel-item-body">
+					<div class="mdui-container">
+						<div class="mdui-table-fluid">
+							<table class="mdui-table mdui-table-hoverable" id="table1">
+								<thead class="thead1">
+									<tr>
+										<th>#</th>
+										<th>花萼长度</th>
+										<th>花萼宽度</th>
+										<th>花瓣长度</th>
+										<th>花瓣宽度</th>
+									</tr>
+								</thead>
+								<tbody id="tbody1">
+									<!-- <tr>
+										<td>
+											<p class="thead1">1</p>
+										</td>
+										<td>
+											<div class="mdui-textfield">
+												<input class="mdui-textfield-input" type="number" placeholder="请输入花萼长度" />
+											</div>
+										</td>
+										<td>
+											<div class="mdui-textfield">
+												<input class="mdui-textfield-input" type="number" placeholder="请输入花萼宽度" />
+											</div>
+										</td>
+										<td>
+											<div class="mdui-textfield">
+												<input class="mdui-textfield-input" type="number" placeholder="请输入花瓣长度" />
+											</div>
+										</td>
+										<td>
+											<div class="mdui-textfield">
+												<input class="mdui-textfield-input" type="number" placeholder="请输入花瓣宽度" />
+											</div>
+										</td>
+									</tr> -->
+
+								</tbody>
+							</table>
+						</div>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="mdui-panel-item">
+				<div class="mdui-panel-item-header">图像 - Graph</div>
+				<div class="mdui-panel-item-body">
+					<div class="mdui-container">
+						<div class="mdui-shadow-2 mdui-hoverable">
+							<h1 style="padding-top:20px" class="mdui-text-center">鸢尾花数据平行线图</h1>
+							<div id="echart1" style="margin:30px;width: 1150px;height:550px; padding-bottom:20px"></div>
+						</div>
+						<div class="mdui-shadow-2 mdui-hoverable">
+							<h1 class="mdui-text-center" style="padding-top:20px">鸢尾花数据雷达图</h1>
+							<div id="echart2" style="margin:30px;width: 1150px;height:550px; padding-bottom:20px"></div>
+						</div>
+						<div class="mdui-shadow-2 mdui-hoverable">
+							<h1 class="mdui-text-center" style="padding-top:20px">鸢尾花花萼长、宽散点图</h1>
+							<div id="echart3" style="margin:30px;width: 1150px;height:550px; padding-bottom:20px"></div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="mdui-panel-item">
+				<div class="mdui-panel-item-header">结果 - Result</div>
+
+				<div class="mdui-panel-item-body">
+					<div class="mdui-container">
+
+						<div class="mdui-tab mdui-tab-full-width" id="tab">
+							<a href="#tab1-content" style="font-size: 18px;" id="tab1" class="mdui-ripple">KNN</a>
+							<a href="#tab2-content" style="font-size: 18px;" id="tab2" class="mdui-ripple">逻辑回归</a>
+							<a href="#tab4-content" style="font-size: 18px;" id="tab4" class="mdui-ripple">感知器</a>
+						</div>
+						<div class="mdui-shadow-2 mdui-hoverable">
+							<div id="tab1-content" class="mdui-p-a-2">
+								<!-- KNN -->
+								<img class="pic mdui-center" id="knn1" />
+								<img class="pic mdui-center" id="knn2" />
+							</div>
+							<div id="tab2-content" class="mdui-p-a-2">
+								<!-- 逻辑回归 -->
+								<img class="pic mdui-center" id="LR1" />
+								<img class="pic mdui-center" id="LR2" />
+							</div>
+
+							<div id="tab4-content" class="mdui-p-a-2">
+								<!-- 感知器 -->
+								<img class="pic mdui-center" id="perceptron1" />
+								<img class="pic mdui-center" id="perceptron2" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+		</div>
+
+	</body>
+
+</html>
+<script>
+	var tnumber = 1;
+	var datalist = [];
+	var echart1 = echarts.init(document.getElementById('echart1'));
+	var echart2 = echarts.init(document.getElementById('echart2'));
+	var echart3 = echarts.init(document.getElementById('echart3'));
+	var knn1 = document.getElementById('knn1')
+	var knn2 = document.getElementById('knn2')
+	var LR1 = document.getElementById('LR1')
+	var LR2 = document.getElementById('LR2')
+	var perceptron1 = document.getElementById('perceptron1')
+	var perceptron2 = document.getElementById('perceptron2')
+	var tab = new mdui.Tab('#tab');
+	var fab = new mdui.Fab("#fab1");
+	var panel = new mdui.Panel("#panel1");
+	init_data()
+
+	function show_data() {
+		panel.open(0)
+		panel.close(2)
+		panel.close(1)
+		mdui.mutation();
+		mdui.snackbar({
+			timeout:600,
+			message: '正在加载数据',
+			position: 'top'
+		});
+	}
+
+	function init_data() {
+		var $$ = mdui.JQ;
+		var table = $("#tbody1");
+		for (let i in irisdata) {
+			tnumber = tnumber + 1;
+			var c = tnumber % 2 ? "even" : "odd";
+			var html =
+				'<tr class=' + c + '><td><p class="thead1">' + irisdata[i][0] +
+				'</p></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" value= ' + irisdata[i][1] +
+				' type="number" placeholder="请输入花萼长度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" value= ' +
+				irisdata[i][2] +
+				' type="number" placeholder="请输入花萼宽度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" value= ' +
+				irisdata[i][3] +
+				' type="number" placeholder="请输入花瓣长度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" value= ' +
+				irisdata[i][4] + ' type="number" placeholder="请输入花瓣宽度" /></div></td></tr>'
+			table.append(html);
+		}
+
+
+		mdui.mutation();
+	}
+
+	function add_row() {
+		var $$ = mdui.JQ;
+		var table = $("#tbody1");
+		console.log(table)
+		tnumber = tnumber + 1;
+		var html =
+			'<tr><td><p class="thead1">' + tnumber.toString() +
+			'</p></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" type="number" placeholder="请输入花萼长度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" type="number" placeholder="请输入花萼宽度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" type="number" placeholder="请输入花瓣长度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" type="number" placeholder="请输入花瓣宽度" /></div></td></tr>'
+		table.append(html);
+
+		mdui.mutation();
+	}
+
+	function show_graph() {
+		var tb = document.getElementById("table1");
+		var rows = tb.rows;
+		datalist = []
+		mdui.snackbar({
+			timeout:600,
+			message: '正在生成图表',
+			position: 'top'
+		});
+		for (var i = 1; i < rows.length; i++) {
+			var cells = rows[i].cells;
+			var tmplist = [];
+			tmplist.push(i)
+			for (var j = 1; j < cells.length; j++) {
+				tmplist.push(cells[j].children[0].children[0].value)
+			}
+			datalist.push(tmplist)
+
+		}
+
+		init_graph(datalist)
+		panel.close(0)
+		panel.close(2)
+		panel.open(1)
+		mdui.mutation();
+	}
+
+	function run() {
+		datalist = irisdata;
+		var _list = "";
+		for (let i in datalist) {
+			_list = _list + '[' + datalist[i].toString() + '],';
+		}
+		_list = "[" + _list.slice(0, -1) + "]";
+
+		$.ajax({
+			url: "http://127.0.0.1:5000/run",
+			type: "post",
+			dataType: "json",
+			cache: false,
+			data: _list,
+			processData: false,
+			contentType: false,
+			success: function(data) {
+				mdui.snackbar({
+					timeout:1000,
+					message: '展示结果成功!',
+					position: 'top'
+				});
+				console.log(data)
+				knn1.src = data.knn1
+				knn2.src = data.knn2
+				LR1.src = data.LR1
+				LR2.src = data.LR2
+				perceptron1.src = data.perceptron1
+				perceptron2.src = data.perceptron2
+				panel.close(0)
+				panel.close(1)
+				panel.open(2)
+				mdui.mutation();
+
+			},
+			error: function(data) {
+				mdui.dialog({
+					title: '提示：',
+					content: '出错！' + data.toString()
+				});
+			}
+		})
+
+
+	}
+
+	function init_graph(data) {
+		var data = irisdata;
+		/*
+				var data = [
+					[1, 1, 1, 1, 1],
+					[2, 2, 2, 2, 2],
+					[3, 3, 3, 4, 4]
+				];
+		*/
+
+		var schema = [{
+				name: 'num',
+				index: 0,
+				text: '#'
+			},
+			{
+				name: 'SL',
+				index: 1,
+				text: '花萼长度'
+			},
+			{
+				name: 'SW',
+				index: 2,
+				text: '花萼宽度'
+			},
+			{
+				name: 'PL',
+				index: 3,
+				text: '花瓣长度'
+			},
+			{
+				name: 'PW',
+				index: 4,
+				text: ' 花瓣宽度'
+			},
+			{
+				name: 'type',
+				index: 5,
+				text: '鸢尾花品种'
+			}
+		];
+
+		var lineStyle = {
+			normal: {
+				width: 1,
+				opacity: 0.7
+			}
+		};
+
+		option = {
+			backgroundColor: '#404a59',
+			tooltip: {
+				padding: 10,
+				backgroundColor: '#222',
+				borderColor: '#777',
+				borderWidth: 1,
+				formatter: function(obj) {
+					var value = obj[0].value;
+					return '<div style="border-bottom: 1px solid rgba(255,255,255,.3); font-size: 18px;padding-bottom: 7px;margin-bottom: 7px">' +
+						obj[0].seriesName + ' ' + value[0] + '日期：' +
+						value[7] +
+						'</div>' +
+						schema[1].text + '：' + value[1] + '<br>' +
+						schema[2].text + '：' + value[2] + '<br>' +
+						schema[3].text + '：' + value[3] + '<br>' +
+						schema[4].text + '：' + value[4] + '<br>' +
+						schema[5].text + '：' + value[5] + '<br>'
+				}
+			},
+			// dataZoom: {
+			//     show: true,
+			//     orient: 'vertical',
+			//     parallelAxisIndex: [0]
+			// },
+			parallelAxis: [{
+					dim: 0,
+					name: schema[0].text,
+					inverse: true,
+					nameLocation: 'start'
+				},
+				{
+					dim: 1,
+					name: schema[1].text
+				},
+				{
+					dim: 2,
+					name: schema[2].text
+				},
+				{
+					dim: 3,
+					name: schema[3].text
+				},
+				{
+					dim: 4,
+					name: schema[4].text
+				},
+				{
+					dim: 5,
+					name: schema[5].text,
+					minInterval: 1
+				}
+			],
+			visualMap: {
+				show: false,
+				min: 1,
+				max: 3,
+				dimension: 5,
+				inRange: {
+					color: ['#d94e5d', '#eac736', '#50a3ba'].reverse(),
+					// colorAlpha: [0, 1]
+				}
+			},
+			parallel: {
+				left: '60px',
+				right: '80px',
+				bottom: '40px',
+				top: '60px',
+				parallelAxisDefault: {
+					type: 'value',
+					name: '数据展示',
+					nameLocation: 'end',
+					nameGap: 20,
+					nameTextStyle: {
+						color: '#fff',
+						fontSize: 16
+					},
+					axisLine: {
+						lineStyle: {
+							color: '#aaa',
+							width: 3
+						}
+					},
+					axisTick: {
+						lineStyle: {
+							color: '#777',
+							width: 3
+						}
+					},
+					splitLine: {
+						width: 3
+					},
+					axisLabel: {
+						textStyle: {
+							color: '#fff'
+						}
+					}
+				}
+			},
+			series: [{
+				name: '品种',
+				type: 'parallel',
+				lineStyle: lineStyle,
+				data: data
+			}]
+		};
+		echart1.setOption(option);
+
+
+
+		var data1 = [],
+			data2 = [],
+			data3 = [];
+		for (let i in irisdata) {
+			var tmplist = [irisdata[i][1], irisdata[i][2], irisdata[i][3], irisdata[i][4]];
+			if (irisdata[i][5] == 1) data1.push(tmplist);
+			if (irisdata[i][5] == 2) data2.push(tmplist);
+			if (irisdata[i][5] == 3) data3.push(tmplist);
+		}
+
+
+
+
+		var lineStyle = {
+			normal: {
+				width: 1,
+				opacity: 0.3
+			}
+		};
+
+		option = {
+			backgroundColor: '#404a59',
+			legend: {
+				bottom: 5,
+				data: ['品种1', '品种2', '品种3'],
+				itemGap: 20,
+				textStyle: {
+					color: '#fff',
+					fontSize: 18
+				},
+				selectedMode: 'single'
+			},
+			radar: {
+				indicator: [{
+						name: '花萼长度',
+						max: 8
+					},
+					{
+						name: '花萼宽度',
+						max: 5
+					},
+					{
+						name: '花瓣长度',
+						max: 7
+					},
+					{
+						name: '花瓣宽度',
+						max: 2.8
+					}
+				],
+				shape: 'circle',
+				splitNumber: 5,
+				name: {
+					textStyle: {
+						color: 'rgb(238, 197, 102)',
+						fontSize: 18
+					}
+				},
+				splitLine: {
+					lineStyle: {
+						color: [
+							'rgba(238, 197, 102, 0.1)', 'rgba(238, 197, 102, 0.2)',
+							'rgba(238, 197, 102, 0.4)', 'rgba(238, 197, 102, 0.6)',
+							'rgba(238, 197, 102, 0.8)', 'rgba(238, 197, 102, 1)'
+						].reverse()
+					}
+				},
+				splitArea: {
+					show: true
+				},
+				axisLine: {
+					lineStyle: {
+						color: 'rgba(238, 197, 102, 0.8)'
+					}
+				}
+			},
+			series: [{
+					name: '品种1',
+					type: 'radar',
+					lineStyle: lineStyle,
+					data: data1,
+					symbol: 'none',
+					itemStyle: {
+						normal: {
+							color: '#F9713C'
+						}
+					},
+					areaStyle: {
+						normal: {
+							opacity: 0.01
+						}
+					}
+				},
+				{
+					name: '品种2',
+					type: 'radar',
+					lineStyle: lineStyle,
+					data: data2,
+					symbol: 'none',
+					itemStyle: {
+						normal: {
+							color: '#B3E4A1'
+						}
+					},
+					areaStyle: {
+						normal: {
+							opacity: 0.01
+						}
+					}
+				},
+				{
+					name: '品种3',
+					type: 'radar',
+					lineStyle: lineStyle,
+					data: data3,
+					symbol: 'none',
+					itemStyle: {
+						normal: {
+							color: 'rgb(238, 197, 102)'
+						}
+					},
+					areaStyle: {
+						normal: {
+							opacity: 0.01
+						}
+					}
+				}
+			]
+		};
+		echart2.setOption(option);
+
+		var schema = [{
+				name: 'SL',
+				index: 0,
+				text: '花萼长度'
+			},
+			{
+				name: 'SW',
+				index: 1,
+				text: '花萼宽度'
+			},
+			{
+				name: 'PL',
+				index: 2,
+				text: '花瓣长度'
+			},
+			{
+				name: 'PW',
+				index: 3,
+				text: '花瓣宽度'
+			},
+		];
+
+
+		var itemStyle = {
+			normal: {
+				opacity: 0.8,
+				shadowBlur: 10,
+				shadowOffsetX: 0,
+				shadowOffsetY: 0,
+				shadowColor: 'rgba(0, 0, 0, 0.5)'
+			}
+		};
+
+		option = {
+			backgroundColor: '#404a59',
+			color: [
+				'#dd4444', '#fec42c', '#80F1BE'
+			],
+			legend: {
+				y: 'bottom',
+				data: ['品种1', '品种2', '品种3'],
+				textStyle: {
+					color: '#fff',
+					fontSize: 18
+				}
+			},
+			grid: {
+				x: '10%',
+				x2: 150,
+				y: '18%',
+				y2: '12%'
+			},
+			tooltip: {
+				padding: 10,
+				backgroundColor: '#222',
+				borderColor: '#777',
+				borderWidth: 1,
+				formatter: function(obj) {
+					var value = obj.value;
+					return '<div style="border-bottom: 1px solid rgba(255,255,255,.3); font-size: 18px;padding-bottom: 7px;margin-bottom: 7px">' +
+						obj.seriesName +
+						'</div>' + schema[0].text + '：' + value[0] + '<br>' +
+						schema[1].text + '：' + value[1] + '<br>' +
+						schema[2].text + '：' + value[2] + '<br>' +
+						schema[3].text + '：' + value[3] + '<br>';
+
+				}
+			},
+			xAxis: {
+				type: 'value',
+				name: '花萼长度',
+				nameGap: 16,
+				nameTextStyle: {
+					color: '#fff',
+					fontSize: 18
+				},
+				min: 4,
+				max: 8,
+				splitLine: {
+					show: false
+				},
+				axisLine: {
+					lineStyle: {
+						color: '#eee'
+					}
+				}
+			},
+			yAxis: {
+				type: 'value',
+				name: '花萼宽度',
+				nameLocation: 'end',
+				min: 1.5,
+				max: 4.5,
+				nameGap: 20,
+				nameTextStyle: {
+					color: '#fff',
+					fontSize: 18
+				},
+				axisLine: {
+					lineStyle: {
+						color: '#eee'
+					}
+				},
+				splitLine: {
+					show: false
+				}
+			},
+
+			series: [{
+					name: '品种1',
+					type: 'scatter',
+					itemStyle: itemStyle,
+					data: data1
+				},
+				{
+					name: '品种2',
+					type: 'scatter',
+					itemStyle: itemStyle,
+					data: data2
+				},
+				{
+					name: '品种3',
+					type: 'scatter',
+					itemStyle: itemStyle,
+					data: data3
+				}
+			],
+
+		};
+		echart3.setOption(option);
+	}
+</script>
+<style>
+	.thead1 {
+		font-weight: 300;
+		font-style: italic;
+		font-size: 22px;
+	}
+
+	.mdui-table th {
+		font-weight: 400;
+		font-size: 24px;
+		font-style: normal;
+	}
+
+	.mdui-textfield-focus {
+		.mdui-textfield-input {
+			border-bottom-color: #448AFF;
+			box-shadow: 0 1px 0 0 #448AFF;
+		}
+	}
+
+	.mdui-panel-item-header {
+		font-size: 22px;
+	}
+
+	.pic {
+		width: 800px;
+	}
+
+	.mdui-fab-fixed,
+	.mdui-fab-wrapper {
+		right: 64px;
+		bottom: 48px;
+	}
+
+	.mdui-table th {
+		background-color: #FF4081;
+		color: #fff;
+	}
+
+	.odd {
+		background-color: #fce4ec;
+	}
+
+	.even {
+		background-color: #f8bbd0;
+	}
+</style>
