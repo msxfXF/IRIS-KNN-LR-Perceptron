@@ -9,13 +9,6 @@ iris鸢尾花数据集展示，数据结构算法实验周项目
 
 > 感知器
 
-## 目录结构
-web目录为前端
-
-back为python的flask后端
-
-(代码写的有点乱，没来得及整理 orz
-
 ## 使用到的开源库
 
 > Echart :https://github.com/apache/incubator-echarts
