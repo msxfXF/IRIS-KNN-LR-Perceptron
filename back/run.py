@@ -7,6 +7,8 @@ import perceptron
 from util import server
 import json
 import os
+import numpy as np
+import pandas as pd
 
 from werkzeug.utils import secure_filename
 app = Flask(__name__)
@@ -30,12 +32,13 @@ def upload_file():
         LR.runLR()
         perceptron.runPerceptron()
         ms.print("status","success")
-        ms.print("knn1","./static/knn1.jpg")
-        ms.print("knn2","./static/knn2.jpg")
-        ms.print("LR1","./static/LR1.jpg")
-        ms.print("LR2","./static/LR2.jpg")
-        ms.print("perceptron1","./static/perceptron1.jpg")
-        ms.print("perceptron2","./static/perceptron2.jpg")
+        ms.print("knn1","http://127.0.0.1:5000/static/knn1.jpg")
+        ms.print("knn2","http://127.0.0.1:5000/static/knn2.jpg")
+        ms.print("LR1","http://127.0.0.1:5000/static/LR1.jpg")
+        ms.print("LR2","http://127.0.0.1:5000/static/LR2.jpg")
+        ms.print("perceptron1","http://127.0.0.1:5000/static/perceptron1.jpg")
+        ms.print("perceptron2","http://127.0.0.1:5000/static/perceptron2.jpg")
+        ms.print("describe",json.loads(describe().to_json()))
         return ms.send()
     ms.print("status","fail")
     return ms.send()
@@ -46,6 +49,12 @@ def af_request(resp):
     resp.headers['Access-Control-Allow-Methods'] = 'GET,POST'
     resp.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
     return resp
+def describe():
+    data = pd.read_csv("./iris.csv")
+    data["Species"] = data["Species"].map({"Iris-virginica": 0, "Iris-setosa": 1, "Iris-versicolor": 2})
+    data.drop("Id", axis=1, inplace=True)
+    data.drop_duplicates(inplace=True)
+    return data.describe()
 
 if __name__ == "__main__":
     app.run()

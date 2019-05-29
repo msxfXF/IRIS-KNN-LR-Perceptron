@@ -8,6 +8,7 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.2/css/mdui.min.css">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.2/js/mdui.min.js"></script>
 		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+		<script src="https://cdn.bootcss.com/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
 		<script src="./echarts.min.js"></script>
 		<script src="./irisdata.js"></script>
 		<div class="mdui-toolbar mdui-color-theme">
@@ -50,6 +51,7 @@
 										<th>花萼宽度</th>
 										<th>花瓣长度</th>
 										<th>花瓣宽度</th>
+										<th>鸢尾花品种</th>
 									</tr>
 								</thead>
 								<tbody id="tbody1">
@@ -91,15 +93,15 @@
 				<div class="mdui-panel-item-header">图像 - Graph</div>
 				<div class="mdui-panel-item-body">
 					<div class="mdui-container">
-						<div class="mdui-shadow-2 mdui-hoverable">
+						<div class="mdui-shadow-2 mdui-hoverable" id="e1">
 							<h1 style="padding-top:20px" class="mdui-text-center">鸢尾花数据平行线图</h1>
 							<div id="echart1" style="margin:30px;width: 1150px;height:550px; padding-bottom:20px"></div>
 						</div>
-						<div class="mdui-shadow-2 mdui-hoverable">
+						<div class="mdui-shadow-2 mdui-hoverable" id="e2">
 							<h1 class="mdui-text-center" style="padding-top:20px">鸢尾花数据雷达图</h1>
 							<div id="echart2" style="margin:30px;width: 1150px;height:550px; padding-bottom:20px"></div>
 						</div>
-						<div class="mdui-shadow-2 mdui-hoverable">
+						<div class="mdui-shadow-2 mdui-hoverable" id="e3">
 							<h1 class="mdui-text-center" style="padding-top:20px">鸢尾花花萼长、宽散点图</h1>
 							<div id="echart3" style="margin:30px;width: 1150px;height:550px; padding-bottom:20px"></div>
 						</div>
@@ -113,6 +115,20 @@
 
 				<div class="mdui-panel-item-body">
 					<div class="mdui-container">
+						<table class="mdui-table mdui-table-hoverable" id="table1">
+							<thead class="thead1">
+								<tr>
+									<th>#</th>
+									<th>花萼长度</th>
+									<th>花萼宽度</th>
+									<th>花瓣长度</th>
+									<th>花瓣宽度</th>
+								</tr>
+							</thead>
+							<tbody id="tbody2">
+						
+							</tbody>
+						</table>
 
 						<div class="mdui-tab mdui-tab-full-width" id="tab">
 							<a href="#tab1-content" style="font-size: 18px;" id="tab1" class="mdui-ripple">KNN</a>
@@ -162,15 +178,65 @@
 	var tab = new mdui.Tab('#tab');
 	var fab = new mdui.Fab("#fab1");
 	var panel = new mdui.Panel("#panel1");
+	var scroll_enable = true;
+	var fabindex = 0;
 	init_data()
+
+	$(window).scroll(function(event) {
+
+		if (scroll_enable && fabindex == 1) {
+			var scrolltop = $(document).scrollTop();
+			console.log(scrolltop)
+			if (scrolltop >= 270 && scrolltop <= 420) {
+				$.scrollTo('#e2', 500);
+				scroll_enable = !scroll_enable
+				echart2.clear()
+				init_graph()
+				setTimeout(function() {
+					scroll_enable = !scroll_enable
+				}, 600);
+			} else
+			if (scrolltop >= 820 && scrolltop <= 860) { //200
+				$.scrollTo('#e1', 500);
+				scroll_enable = !scroll_enable
+				echart1.clear()
+				init_graph()
+				setTimeout(function() {
+					scroll_enable = !scroll_enable
+				}, 600);
+
+			} else
+			if (scrolltop >= 950 && scrolltop <= 1100) { //890
+				$.scrollTo('#e3', 500);
+				scroll_enable = !scroll_enable
+				echart3.clear()
+				init_graph()
+				setTimeout(function() {
+					scroll_enable = !scroll_enable
+				}, 600);
+			} else
+			if (scrolltop >= 1350 && scrolltop <= 1500) { //1570
+				$.scrollTo('#e2', 500);
+				scroll_enable = !scroll_enable
+				echart2.clear()
+				init_graph()
+				setTimeout(function() {
+					scroll_enable = !scroll_enable
+				}, 600);
+			}
+		}
+
+
+	});
 
 	function show_data() {
 		panel.open(0)
+		fabindex = 0;
 		panel.close(2)
 		panel.close(1)
 		mdui.mutation();
 		mdui.snackbar({
-			timeout:600,
+			timeout: 600,
 			message: '正在加载数据',
 			position: 'top'
 		});
@@ -190,7 +256,11 @@
 				' type="number" placeholder="请输入花萼宽度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" value= ' +
 				irisdata[i][3] +
 				' type="number" placeholder="请输入花瓣长度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" value= ' +
-				irisdata[i][4] + ' type="number" placeholder="请输入花瓣宽度" /></div></td></tr>'
+				irisdata[i][4] +
+				' type="number" placeholder="请输入花瓣宽度" /></div></td><td><div class="mdui-textfield"><input class="mdui-textfield-input" value= ' +
+				irisdata[i][5] +
+				' type="number" placeholder="请输入鸢尾花品种" /></div></td></tr>'
+
 			table.append(html);
 		}
 
@@ -216,7 +286,7 @@
 		var rows = tb.rows;
 		datalist = []
 		mdui.snackbar({
-			timeout:600,
+			timeout: 600,
 			message: '正在生成图表',
 			position: 'top'
 		});
@@ -231,10 +301,11 @@
 
 		}
 
-		init_graph(datalist)
+		init_graph()
 		panel.close(0)
 		panel.close(2)
 		panel.open(1)
+		fabindex = 1;
 		mdui.mutation();
 	}
 
@@ -256,7 +327,7 @@
 			contentType: false,
 			success: function(data) {
 				mdui.snackbar({
-					timeout:1000,
+					timeout: 1000,
 					message: '展示结果成功!',
 					position: 'top'
 				});
@@ -270,7 +341,28 @@
 				panel.close(0)
 				panel.close(1)
 				panel.open(2)
-				mdui.mutation();
+				fabindex = 2;
+				var table = $("#tbody2");
+				console.log(table)
+				tnumber = tnumber + 1;
+				var html =
+					'<tr><td><p class="thead1">' + "平均值" +
+					'</p></td><td><p class="thead1">' + data.describe.PetalLengthCm.mean + '</p></td><td><p class="thead1">' + data
+					.describe.PetalWidthCm.mean + '</p></td><td><p class="thead1">' + data.describe.SepalLengthCm.mean +
+					'</p></td><td><p class="thead1">' + data.describe.SepalWidthCm.mean + '</p></td></tr>'
+				html = html+'<tr><td><p class="thead1">' + "最小值" +
+					'</p></td><td><p class="thead1">' + data.describe.PetalLengthCm.min + '</p></td><td><p class="thead1">' + data
+					.describe.PetalWidthCm.min + '</p></td><td><p class="thead1">' + data.describe.SepalLengthCm.min +
+					'</p></td><td><p class="thead1">' + data.describe.SepalWidthCm.min + '</p></td></tr>'
+				html = html+'<tr><td><p class="thead1">' + "最大值" +
+					'</p></td><td><p class="thead1">' + data.describe.PetalLengthCm.max + '</p></td><td><p class="thead1">' + data
+					.describe.PetalWidthCm.max + '</p></td><td><p class="thead1">' + data.describe.SepalLengthCm.max +
+					'</p></td><td><p class="thead1">' + data.describe.SepalWidthCm.max + '</p></td></tr>'
+				html = html+'<tr><td><p class="thead1">' + "标准差" +
+					'</p></td><td><p class="thead1">' + data.describe.PetalLengthCm.std + '</p></td><td><p class="thead1">' + data
+					.describe.PetalWidthCm.std + '</p></td><td><p class="thead1">' + data.describe.SepalLengthCm.std +
+					'</p></td><td><p class="thead1">' + data.describe.SepalWidthCm.std + '</p></td></tr>'
+				table.append(html);
 
 			},
 			error: function(data) {
@@ -284,8 +376,11 @@
 
 	}
 
-	function init_graph(data) {
+	function init_graph() {
 		var data = irisdata;
+		// echart1.clear();
+		// echart2.clear();
+		// echart3.clear();
 		/*
 				var data = [
 					[1, 1, 1, 1, 1],
@@ -751,5 +846,9 @@
 
 	.even {
 		background-color: #f8bbd0;
+	}
+
+	.tbody2 {
+		font-size: 16px;
 	}
 </style>
